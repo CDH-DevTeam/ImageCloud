@@ -1,7 +1,8 @@
 import * as utils from './utils'
 import * as THREE from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls'
-import TextureMerger from '../components/TextureMerger/TextureMerger'
+// import TextureMerger from '../components/TextureMerger/TextureMerger'
+import { TextureAtlas } from './TextureAtlas'
 
 window.THREE = THREE;
 
@@ -115,8 +116,11 @@ function updateMeshUV(mesh, range){
 export function meshes(images) {
 
     return load(images).then(textures => {
-        const textureMerger = new TextureMerger(textures);
+        // const textureMerger = new TextureMerger(textures);
+
+        const textureMerger = new TextureAtlas(textures)
         const meshes = [];
+
 
         for (const [idx, image] of images.entries()) {
 
@@ -137,7 +141,9 @@ export function meshes(images) {
             mesh.material.depthTest = false;
             mesh.renderOrder = idx;
 
-            updateMeshUV(mesh, textureMerger.ranges[idx.toString()])
+            // const range = textureMerger.ranges[idx.toString()]
+            const range = textureMerger.ranges.get(texture) // TODO: Should be image or the like. Refactor above
+            updateMeshUV(mesh, range)
     
             meshes.push(mesh);
         }
