@@ -56,13 +56,12 @@ class ImageCloud {
         this.controls   = animation.controls(this.camera, this.renderer);
         this.mouse      = animation.mouse();
 
-        // // Make sure the image cloud is empty
-        // if (!ImageCloud.isClear(this)) {
-        //     this.clear();
-        //     console.log(this.scene)
-        // }
+        // Make sure the image cloud is empty
+        if (!ImageCloud.isClear(this)) {
+            this.clear();
+        }
 
-        // // Add images as meshes
+        // Add images as meshes
         animation.meshes(this.images).then((meshes) => {
             
             meshes.forEach((mesh) => {
