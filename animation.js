@@ -2,7 +2,7 @@ import * as utils from './utils'
 import * as THREE from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls'
 // import TextureMerger from '../components/TextureMerger/TextureMerger'
-import { TextureAtlas } from './TextureAtlas'
+import TextureAtlas from './TextureAtlas'
 
 window.THREE = THREE;
 
@@ -86,13 +86,20 @@ export function load(images) {
 
         const loader = new THREE.TextureLoader(manager);
 
-        const textures = {};
+        const textures = [];
             
-        for (const [idx, image] of images.entries()) {
+        for (let [idx, image] of images.entries()) {
+
+            idx;
 
             // Load texture
             loader.load(image.url, (texture) => {
-                textures[idx.toString()] = texture;
+                
+                // Set positions
+                texture.x = image.x
+                texture.y = image.y
+
+                textures.push(texture);
             })
         }
         
@@ -122,7 +129,7 @@ export function meshes(images) {
         const meshes = [];
 
 
-        for (const [idx, image] of images.entries()) {
+        for (const [idx, texture] of textures.entries()) {
 
 
             // Create a material texture from the image
@@ -135,8 +142,7 @@ export function meshes(images) {
     
             // Create a mesh object for the image
             const mesh = new THREE.Mesh(geometry, material);
-    
-            mesh.position.set(utils.scale(image.x), utils.scale(image.y), 0);
+            mesh.position.set(utils.scale(texture.x), utils.scale(texture.y), 0);
             mesh.material.map = textureMerger.mergedTexture;
             mesh.material.depthTest = false;
             mesh.renderOrder = idx;
@@ -149,6 +155,32 @@ export function meshes(images) {
         }
 
         return meshes
+
+    });
+
+}
+
+
+export function merged(images) {
+
+    return load(images).then(textures => {
+        // const textureMerger = new TextureMerger(textures);
+
+        const textureMerger = new TextureAtlas(textures)
+
+        const material = new THREE.MeshBasicMaterial( {
+            map: textureMerger.mergedTexture,
+            // transparent: texture
+        } );        // Set image dimensions
+
+        const geometry = new THREE.PlaneBufferGeometry(1, 1);
+
+        // Create a mesh object for the image
+        const mesh = new THREE.Mesh(geometry, material);
+
+        console.log(textureMerger.mergedTexture)
+
+        return [mesh]
 
     });
 

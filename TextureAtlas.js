@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { TexturePacker } from './TexturePacker'
+import TexturePacker from './TexturePacker'
 
 export default class TextureAtlas {
 
@@ -7,7 +7,7 @@ export default class TextureAtlas {
 
         this.textures = textures;
         this.max_texture_size = max_texture_size;
-        this.packer = TexturePacker()
+        this.packer = new TexturePacker()
 
         // Computed members
         // this.urls = this.collectURLs(textures);
@@ -21,25 +21,15 @@ export default class TextureAtlas {
     }
 
     build() {
-
-        // Sort textures
-        this.textures.sort((a, b) => area(a) - area(b))
+        
+        // Sort textures in descending order
+        this.textures.sort((a, b) => area(b) - area(a))
         
         // Pack the textures into a rectangular shape
-        this.offsets = packer.fit(textures)
+        this.offsets = this.packer.fit(this.textures)
 
-        const rightMost     = this.textures.reduce((prev, current) => (+prev.x > +current.x) ? prev : current)
-        const bottomMost    = this.textures.reduce((prev, current) => (+prev.y > +current.y) ? prev : current)
-
-        // const contextWidth  = rightMost.x + rightMost.width;
-        // const contextHeight = bottomMost.y + bottomMost.height;
-
-        // this.canvas.width   = contextWidth;
-        // this.canvas.height  = contextHeight;
-
-        this.canvas.width  = rightMost.x + rightMost.width;
-        this.canvas.height = bottomMost.y + bottomMost.height;
-
+        this.canvas.width  = this.packer.root.width;
+        this.canvas.height = this.packer.root.height;
 
     }
 
@@ -52,18 +42,33 @@ export default class TextureAtlas {
         // A bin-packing problem
         for (let texture of this.textures) {
 
-            offset = this.offsets.get(texture)
+            let offset = this.offsets.get(texture)
 
             // Draw the images
             context.drawImage(texture.image, offset.x, offset.y, texture.image.width, texture.image.height)
 
             // Ranges for each of the images in the atlas
+            // let range = {
+            //     startU: offset.x / this.canvas.width, //contextWidth
+            //     endU: (offset.x + offset.width) / this.canvas.width,
+            //     startV: 1-(offset.y / this.canvas.height),
+            //     endV: 1-((offset.y + offset.height) / this.canvas.height)
+            // }
+
+            // let range = {
+            //     startU: offset.x,
+            //     endU: offset.x + offset.width,
+            //     startV: offset.y ,
+            //     endV: offset.y + offset.height
+            // }
+
             let range = {
-                startU = offset.x / this.canvas.width, //contextWidth
-                endU   = (offset.x + offset.width) / this.canvas.width,
-                startV = 1-(offset.y / this.canvas.height),
-                endV = 1-((offset.y + offset.height) / this.canvas.height)
+                startU: offset.x / this.canvas.width, //contextWidth
+                endU: (offset.x + texture.image.width) / this.canvas.width,
+                startV: 1-(offset.y / this.canvas.height),
+                endV: 1-((offset.y + texture.image.height) / this.canvas.height)
             }
+
 
             // Add to map
             this.ranges.set(texture, range)

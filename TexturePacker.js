@@ -5,7 +5,7 @@ export default class TexturePacker {
     constructor() {
 
         // Maps a texture to a node with offsets and dimensions
-        this.offsets  = WeakMap()
+        this.offsets  = new WeakMap()
 
         // Add the root node (upper left)
         this.root = {
@@ -18,20 +18,15 @@ export default class TexturePacker {
 
     fit(textures) {
 
-        // Sort by size
-        // textures.sort((a, b) => area(a) - area(b))
-
         // Start with the largest texture
         this.root.width = textures[0].image.width;
         this.root.height = textures[0].image.height;
-        
-
-        let node;
-        
+                
         // Grow the larger rectangle, texture by texture
         for (let texture of textures) {
 
-            if (node = this.findNode(this.root, texture.image.width, texture.image.height)) {
+            let node = this.findNode(this.root, texture.image.width, texture.image.height)
+            if (node) {
 
                 this.offsets.set(texture, this.splitNode(node, texture.image.width, texture.image.height))
 
@@ -79,20 +74,20 @@ export default class TexturePacker {
     }
 
     growNode(width, height) {
-        hasSmallerWidth = (width <= this.root.width)
-        hasSmallerHeight = (height <= this.root.height)
+        const hasSmallerWidth = (width <= this.root.width)
+        const hasSmallerHeight = (height <= this.root.height)
 
-        ensureSquareRight = hasSmallerWidth && (this.root.height >= (this.root.width + width))
-        ensureSquareDown  = hasSmallerHeight && (this.root.width >= (this.root.height + height))
+        const ensureSquareRight = hasSmallerWidth && (this.root.height >= (this.root.width + width))
+        const ensureSquareDown  = hasSmallerHeight && (this.root.width >= (this.root.height + height))
 
         if (ensureSquareRight) {
             return this.growRight(width, height)
         } else if (ensureSquareDown) {
-            this.growDown(width, height) 
+            return this.growDown(width, height) 
         } else if (hasSmallerWidth) {
-            this.growRight(width, height)
+            return this.growRight(width, height)
         } else if (hasSmallerHeight) {
-            this.growDown(width, height)
+            return this.growDown(width, height)
         } else {
             return null
         }
@@ -116,7 +111,9 @@ export default class TexturePacker {
             }
         }
 
-        if (node = this.findNode(this.root, width, height)) {
+        let node = this.findNode(this.root, width, height)
+
+        if (node) {
             return this.splitNode(node, width, height)
         } else {
             return null
@@ -140,18 +137,12 @@ export default class TexturePacker {
             right: this.root
         }
 
-        if (node = this.findNode(this.root, width, height)) {
+        let node = this.findNode(this.root, width, height)
+
+        if (node) {
             return this.splitNode(node, width, height)
         } else {
             return null
         }
-    }
-}
-
-function area(texture) {
-    if (texture) {
-        return texture.image.width * texture.image.height;
-    } else {
-        return 0
     }
 }
